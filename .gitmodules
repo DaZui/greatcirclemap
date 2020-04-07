@@ -1,0 +1,6 @@
+[submodule "static/leaflet_chinese_tms_providers"]
+	path = static/leaflet_chinese_tms_providers
+	url = https://github.com/DaZui/Leaflet.ChineseTmsProviders.git
+[submodule "static/leaflet_tools"]
+	path = static/leaflet_tools
+	url = https://github.com/DaZui/leaflet_tools.git
