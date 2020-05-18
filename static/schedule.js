@@ -1,104 +1,122 @@
+const path = /^(([A-z]{3}-)+([A-z]{3}\/)*)*[A-z]{3}$/;
+const range = /^\d+km@[A-z]{3}$/;
+
 const getQueryVariable = variable => {
-  const vars = window.location.search.substring(1).split("&")
+  const vars = window.location.search.substring(1).split("&");
   for (const i in vars) {
-    const [a, b] = vars[i].split("=")
+    const [a, b] = vars[i].split("=");
     if (a === variable) {
-      return b
+      return b;
     }
   }
-  return ""
-}
+  return "";
+};
 
-const toggleFullScreen = (id) => {
-  let elem = document.querySelector(id)
+const toggleFullScreen = id => {
+  let elem = document.querySelector(id);
 
   if (!document.fullscreenElement) {
     elem.requestFullscreen().catch(err => {
-      alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`)
-    })
+      alert(
+        `Error attempting to enable full-screen mode: ${err.message} (${err.name})`
+      );
+    });
   } else {
-    document.exitFullscreen()
+    document.exitFullscreen();
   }
-}
+};
 
 const send_request = () => {
   if (root.graph) {
-    root.graph.remove()
-    root.graph = null
+    root.graph.remove();
+    root.graph = null;
   }
-  const center = 120
+  const center = 120;
   root.graph = L.map("map", {
-    maxBounds: L.latLngBounds([89, center - 179], [-89, center + 179])
-  }).setView([35, center], 0)
-  L.tileLayer.chinaProvider("Google", {
-    '_mode': 'Terrain'
-  }).addTo(root.graph)
+    maxBounds: L.latLngBounds([89, center - 179], [-89, center + 179]),
+  }).setView([35, center], 0);
+  L.tileLayer
+    .chinaProvider("Google", {
+      _mode: "Terrain",
+    })
+    .addTo(root.graph);
 
-  root.airports = {}
-  root.airroutes = []
-  const requests = root.question_modal.query.toUpperCase().split(/\n+|,+|;+/)
-  const p = requests.map(e => e.match(/[A-Z]{3}/g))
-  p.forEach(IATAcodes => {
-    if (!IATAcodes) {
-      return
-    }
-    if (IATAcodes.length >= 2) {
-      const a = new 航线(IATAcodes)
-      a.绘图({
-        color: 'blue'
-      })
-      root.airroutes.push(a)
-    }
-    IATAcodes.forEach(x => {
-      if (!(x in root.airports)) {
-        const a = new 机场(x)
-        a.绘图()
-        root.airports[x] = a
-      }
-    })
-  })
-  const ranges = requests.map(e => e.match(/\d+KM@[A-Z]{3}/g))
-  for (let x in ranges) {
-    if (!ranges[x]) {
-      continue
-    }
-    ranges[x].forEach(r => {
-      const [a, b] = r.split("KM@")
-      绘制一条线(root.airports[b].位置.范围(a), {
-        color: 'yellow'
-      })
-    })
-  }
-}
+  root.points.points.forEach(IATAcodes => new 机场(IATAcodes).绘图());
+  root.points.routes.forEach(route => {
+    const l = route.length;
+    const a = route.slice(0, l - 1);
+    a.forEach(IATAcodes => new 机场(IATAcodes).绘图());
+    route[l - 1].forEach(last => {
+      new 机场(last).绘图();
+      new 航线(a.concat([last])).绘图({
+        color: "blue",
+      });
+    });
+  });
+
+  root.points.ranges.forEach(r => {
+    const a = new 机场(r[0]);
+    a.绘图();
+    绘制一条线(a.位置.范围(r[1]), {
+      color: "yellow",
+    });
+  });
+};
 
 const root = new Vue({
-  el: '#vueapp',
+  el: "#vueapp",
   data: {
     airports: {},
     airroutes: [],
     question_modal: {
       show: false,
-      query: "SYD-LHR, 17000KM@LHR, 17000KM@SYD",
+      query: [],
     },
     aboutShow: false,
     graph: null,
     airport_modal: {
       show: false,
-      airport: null
-    }
+      airport: null,
+    },
   },
+  computed: {
+    points: {
+      get() {
+        const rv = {
+          points: [],
+          routes: [],
+          ranges: [],
+        };
+        this.question_modal.query.map(element => {
+          if (element.length === 3) {
+            rv.points.push(element);
+          } else if (element.includes("km@")) {
+            [distance, airports] = element.split("km@");
+            rv.ranges.push([airports, parseInt(distance)]);
+          } else {
+            const nodes = element.split("-");
+            nodes[nodes.length - 1] = nodes[nodes.length - 1].split("/");
+            rv.routes.push(nodes);
+          }
+        });
+        return rv;
+      },
+    },
+  },
+
   methods: {
-    send_request
+    validator: tag => tag.match(path) || tag.match(range),
+    send_request,
   },
   mounted: () => {
     数据.载入数据(() => {
-      root.question_modal.query = getQueryVariable("query")
+      root.question_modal.query = getQueryVariable("query");
       if (root.question_modal.query.length > 0) {
-        root.question_modal.show = false
-        root.send_request()
+        root.question_modal.show = false;
+        root.send_request();
       } else {
-        root.question_modal.show = true
+        root.question_modal.show = true;
       }
-    })
-  }
-})
+    });
+  },
+});
