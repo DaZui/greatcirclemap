@@ -4,3 +4,6 @@
 [submodule "static/leaflet_tools"]
 	path = static/leaflet_tools
 	url = https://github.com/DaZui/leaflet_tools.git
+[submodule "data"]
+	path = data
+	url = https://github.com/DaZui/airports_zh.git
