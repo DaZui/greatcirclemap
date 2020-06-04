@@ -19,6 +19,9 @@ class 数据 {
 
 class 机场 extends 坐标点 {
   constructor(code, 范围 = null) {
+    if (!数据.机场字典[code]) {
+      console.log(code);
+    }
     super(数据.机场字典[code].position, 范围);
     this.IATA = code;
     this.数据 = 数据.机场字典[code];
@@ -32,9 +35,6 @@ class 机场 extends 坐标点 {
   }
   get 国家() {
     const 国家 = 数据.地区字典[this.数据.country];
-    if (!国家) {
-      console.log(this.数据);
-    }
     if (国家["name_zh"]) {
       return `${国家.flag} ${国家["name_zh"]}`;
     } else if (国家["name_en"]) {
