@@ -3,7 +3,10 @@ class 数据 {
   static 机场字典 = {};
   static 载入数据(回调函数 = () => {}) {
     axios
-      .all([axios.get("data/regions.json"), axios.get("data/airports.json")])
+      .all([
+        axios.get("https://liandlillc.github.io/airports_zh/regions.json"),
+        axios.get("https://liandlillc.github.io/airports_zh/airports.json"),
+      ])
       .then(
         axios.spread((regions_response, airports_response) => {
           数据.机场字典 = airports_response.data;
@@ -29,6 +32,9 @@ class 机场 extends 坐标点 {
   }
   get 国家() {
     const 国家 = 数据.地区字典[this.数据.country];
+    if (!国家) {
+      console.log(this.数据);
+    }
     if (国家["name_zh"]) {
       return `${国家.flag} ${国家["name_zh"]}`;
     } else if (国家["name_en"]) {
