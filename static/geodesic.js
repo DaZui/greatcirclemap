@@ -128,7 +128,7 @@ class 大圆线段 {
   }
   get 大圆航线() {
     const array = [];
-    for (let i = 0; i < 1; i += 10 / this.距离) {
+    for (let i = 0; i < 1; i += 5 / this.距离) {
       array.push(this.中间点(i));
     }
     array.push(this.终);

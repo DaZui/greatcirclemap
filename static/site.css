@@ -1,3 +1,17 @@
+div#map {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+  left: 0%;
+  overflow: hidden;
+  top: 0%;
+}
 .icon {
-    width: 50px;
+  width: 50px;
+}
+nav {
+  position: relative;
+  left: 20%;
+  width: 80%;
 }

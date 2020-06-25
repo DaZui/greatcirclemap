@@ -1,5 +1,5 @@
-const path = /^(([A-Z]{3}-)+([A-Z]{3}\/)*)*[A-Z]{3}$/;
-const range = /^\d+km@[A-Z]{3}$/;
+const path = /^(([A-Za-z]{3}-)+([A-Za-z]{3}\/)*)*[A-Za-z]{3}$/;
+const range = /^\d+km@[A-Za-z]{3}$/;
 
 const getQueryVariable = variable => {
   const vars = window.location.search.substring(1).split("&");
@@ -12,18 +12,18 @@ const getQueryVariable = variable => {
   return "";
 };
 
+
+
 const toggleFullScreen = id => document.querySelector(id).requestFullscreen();
 
 const send_request = () => {
-  if (root.graph) {
-    root.graph.remove();
-  }
+  if (root.graph) { root.graph.remove(); }
   root.graph = 基础地图(
     "map",
     root.map.provider,
     root.map.mode,
     root.map_center,
-    root.map.provider + root.map.mode === "GaoDeMap" ? 3 : 1
+    3
   );
   root.query.points.forEach(r => r.绘图());
   root.query.routes.forEach(r => r.绘图());
@@ -31,6 +31,11 @@ const send_request = () => {
 };
 
 const root = new Vue({
+  components: {
+    'l-map': window.Vue2Leaflet.LMap,
+    'l-tile-layer': window.Vue2Leaflet.LTileLayer,
+    'l-marker': window.Vue2Leaflet.LMarker,
+  },
   el: "#vueapp",
   data: {
     raw_query: [],
@@ -55,6 +60,7 @@ const root = new Vue({
           ranges: [],
         };
         this.raw_query.forEach(element => {
+          element = element.toUpperCase();
           if (element.length === 3) {
             rv.points.push(new 机场(element));
           } else if (element.includes("km@")) {
@@ -81,6 +87,7 @@ const root = new Vue({
   },
   mounted: () => {
     数据.载入数据(() => {
+      root.send_request();
       root.raw_query = getQueryVariable("query").split(",");
       if (root.raw_query.length > 0 && root.raw_query[0].length > 0) {
         sleep(200).then(root.send_request);

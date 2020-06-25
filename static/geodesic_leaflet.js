@@ -9,7 +9,7 @@ const 基础地图 = (
   provider = "Google",
   mode = "Map",
   center = 0,
-  zoom = 2
+  zoom = 5
 ) => {
   const x = L.map(element, {
     maxBounds: L.latLngBounds([90, center - 180], [-90, center + 180]),
