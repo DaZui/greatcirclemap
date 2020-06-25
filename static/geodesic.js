@@ -86,12 +86,19 @@ class 坐标点 {
       return null;
     }
   }
+
+  绘图线段(地图中心 = 120) {
+    return 生成绘图航线(this.范围, 地图中心);
+  }
   get 文字坐标() {
     return `${this.φ.dms} ${this.φ.sign("N", "S")}, 
     ${this.λ.dms} ${this.λ.sign("E", "W")}`;
   }
   toString() {
     return this.文字坐标;
+  }
+  绘图坐标(地图中心) {
+    return [this.φ.d, this.λ.standardize(地图中心).d];
   }
 }
 
@@ -134,4 +141,27 @@ class 大圆线段 {
     array.push(this.终);
     return array;
   }
+  绘图线段(地图中心 = 120) {
+    return 生成绘图航线(this.大圆航线, 地图中心);
+  }
 }
+
+const 生成绘图航线 = (源, 地图中心) => {
+  const 绘图航线 = [];
+  绘图航线.push([]);
+  源.forEach((curr) => {
+    let idx = 绘图航线.length - 1;
+    if (绘图航线[idx].length > 1) {
+      const prev = 绘图航线[idx][绘图航线[idx].length - 1];
+      const cross = (boundary) =>
+        (prev.λ.d <= boundary && curr.λ.d > boundary) ||
+        (prev.λ.d > boundary && curr.λ.d <= boundary);
+      if (cross(地图中心 - 180) || cross(地图中心 + 180)) {
+        绘图航线.push([]);
+        idx++;
+      }
+    }
+    绘图航线[idx].push(curr);
+  });
+  return 绘图航线.map((x) => x.map((p) => p.绘图坐标(地图中心)));
+};

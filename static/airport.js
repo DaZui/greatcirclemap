@@ -49,17 +49,23 @@ class 机场 extends 坐标点 {
 }
 
 class 航线 {
-  constructor(path) {
-    const airports = path.map(x => new 机场(x));
-    this.path = [];
+  toString() {
+    return this.airports.map((x) => x.IATA).join("→");
+  }
+  constructor(input_paths) {
+    this.airports = input_paths.map((x) => new 机场(x));
+    this.paths = [];
     this.total_distance = 0;
-    for (let i = 1; i < path.length; i++) {
-      const u = new 大圆线段(airports[i - 1], airports[i]);
-      this.path.push(u);
+    for (let i = 1; i < input_paths.length; i++) {
+      const u = new 大圆线段(this.airports[i - 1], this.airports[i]);
+      this.paths.push(u);
       this.total_distance += u.距离;
     }
-    if (path.length > 2) {
-      this.direct_path = new 大圆线段(airports[0], airports[path.length - 1]);
+    if (input_paths.length > 2) {
+      this.direct_path = new 大圆线段(
+        this.airports[0],
+        this.airports[input_paths.length - 1]
+      );
       this.divert = (this.total_distance / this.direct_path.距离 - 1) * 100;
     }
   }
