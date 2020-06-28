@@ -28,7 +28,13 @@
 
   <body>
     <div id="vueapp">
-      <l-map id="map" :zoom="map_zoom" :center="map_center_point">
+      <l-map
+        id="map"
+        :zoom="map_zoom"
+        :center="map_center_point"
+        :max-bounds="map_bounds"
+        :min-zoom="1"
+      >
         <l-tile-layer
           :url="map_options.url"
           :subdomains="map_options.subdomains"

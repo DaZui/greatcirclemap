@@ -899,19 +899,19 @@
       color: null
     },
     BFormTag: {
-        removeLabel: "移除内容 Remove Element",
-        variant: "secondary",
-      },
-      BFormTags: {
-        addButtonText: "+",
-        addButtonVariant: "outline-secondary",
-        duplicateTagText: "重复的内容 Duplicate Element(s)",
-        invalidTagText: "不合规则的内容 Invalid Element(s)",
-        placeholder: "添加内容 Add Element...",
-        tagRemoveLabel: "移除内容 Remove Element",
-        tagRemovedLabel: "内容已移除 Element removed",
-        tagVariant: "secondary",
-      },
+      removeLabel: "移除内容",
+      variant: "secondary",
+    },
+    BFormTags: {
+      addButtonText: "+",
+      addButtonVariant: "success",
+      duplicateTagText: "内容重复",
+      invalidTagText: "请补完",
+      placeholder: "添加",
+      tagRemoveLabel: "移除",
+      tagRemovedLabel: "已移除",
+      tagVariant: "info",
+    },
     BFormText: {
       textVariant: 'muted'
     },
