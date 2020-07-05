@@ -4,8 +4,8 @@ class 数据 {
   static 载入数据(回调函数 = () => {}) {
     axios
       .all([
-        axios.get("https://liandlillc.github.io/airports_zh/regions.json"),
-        axios.get("https://liandlillc.github.io/airports_zh/airports.json"),
+        axios.get("https://cdn.jsdelivr.net/gh/liandlillc/airports_zh@master/regions.json"),
+        axios.get("https://cdn.jsdelivr.net/gh/liandlillc/airports_zh@master/airports.json"),
       ])
       .then(
         axios.spread((regions_response, airports_response) => {
@@ -31,7 +31,7 @@ class 机场 extends 坐标点 {
     this.时区 = this.数据.timezone;
   }
   toString() {
-    return `${this.国家} ${this.城市} ${this.名称} (${this.IATA})`;
+    return `${this.城市}`;
   }
   get 国家() {
     const 国家 = 数据.地区字典[this.数据.country];

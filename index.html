@@ -44,18 +44,25 @@
 
         <l-marker
           @click="airport_onclick(pt)"
+          :options="map.marker_options"
           :lat-lng="pt.绘图坐标(map_center)"
           v-for="pt in query.points"
         >
-          <l-tooltip>{{pt.toString()}}</l-tooltip>
+          <l-tooltip v-html="pt.toString()" :options="map.tooltip_options">
+            你好</l-tooltip
+          >
         </l-marker>
         <l-polyline
           @click="airroute_onclick(route)"
           :lat-lngs="route.pts"
-          :color="'red'"
+          :color="route.color"
+          :dash-array="route.dashArray"
+          :weight="2"
           v-for="route in query.polylines"
         >
-          <l-tooltip v-html="route.route.toString()">未能显示</l-tooltip>
+          <l-tooltip v-html="route.route.toString()">
+            未能显示
+          </l-tooltip>
         </l-polyline>
       </l-map>
       <b-navbar type="dark" variant="faded">
@@ -78,13 +85,12 @@
       </b-navbar>
       <b-modal v-model="airport_modal.show" size="xl" hide-footer>
         <template v-slot:modal-title>
-          <h3 v-text="airport_modal.airport"></h3>
+          <h4>
+            {{airport_modal.airport.名称}}（{{airport_modal.airport.IATA}} /
+            {{airport_modal.airport.ICAO}}）
+          </h4>
         </template>
         <b-list-group flush v-if="airport_modal.airport">
-          <b-list-group-item>
-            {{airport_modal.airport.名称}}（ {{airport_modal.airport.IATA}},
-            {{airport_modal.airport.ICAO}} ）
-          </b-list-group-item>
           <b-list-group-item>
             国家/地区和城市： {{ airport_modal.airport.国家 }} {{
             airport_modal.airport.城市 }}

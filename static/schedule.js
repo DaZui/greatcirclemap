@@ -1,5 +1,5 @@
 const path = /^(([A-Za-z]{3}-)+([A-Za-z]{3}\/)*)*[A-Za-z]{3}$/;
-const range = /^\d+km@[A-Za-z]{3}$/;
+const range = /^\d+(km|mi|nm)@[A-Za-z]{3}$/;
 
 const getQueryVariable = (variable) => {
   const vars = window.location.search.substring(1).split("&");
@@ -26,7 +26,14 @@ const root = new Vue({
     graph: null,
     map: {
       provider: "Google",
-      mode: "Satellite",
+      mode: "Map",
+      tooltip_options: {
+        permanent: true,
+        // offset: [0, 25],
+        direction: "bottom",
+        opacity: 1,
+      },
+      marker_options: { opacity: 0 },
     },
     map_center: 120,
     map_zoom: 3,
@@ -53,8 +60,17 @@ const root = new Vue({
         return [0, this.map_center];
       },
     },
+    map_bounds: {
+      get() {
+        return [
+          [90, this.map_center + 179.9],
+          [-90, this.map_center - 179.9],
+        ];
+      },
+    },
     query: {
       get() {
+        this.map_center = parseInt(this.map_center);
         const rv = {
           points: [],
           polylines: [],
@@ -65,9 +81,15 @@ const root = new Vue({
           element = element.toUpperCase();
           if (element.length === 3) {
             rv.points.push(new 机场(element));
-          } else if (element.includes("KM@")) {
-            [distance, airports] = element.split("KM@");
-            const range = new 机场(airports, parseInt(distance));
+          } else if (element.includes("@")) {
+            const [distance, airports] = element.split("@");
+            const range = new 机场(
+              airports,
+              parseInt(distance) *
+                { KM: 1, MI: 1.609344, NM: 1.852 }[
+                  distance.substring(distance.length - 2)
+                ]
+            );
             range.绘图线段(this.map_center).forEach((seg) => {
               rv.points.push(range);
               rv.polylines.push({
@@ -76,6 +98,8 @@ const root = new Vue({
               });
             });
           } else if (element.includes("-")) {
+            const color = "blue";
+            const dashArray = "5,5";
             const nodes = element.split("-");
             const l = nodes.length;
             nodes[l - 1].split("/").forEach((last) => {
@@ -84,11 +108,8 @@ const root = new Vue({
               route.paths.forEach((path) => {
                 rv.points.push(path.起);
                 rv.points.push(path.终);
-                path.绘图线段(this.map_center).forEach((seg) => {
-                  rv.polylines.push({
-                    pts: seg,
-                    route: route,
-                  });
+                path.绘图线段(this.map_center).forEach((pts) => {
+                  rv.polylines.push({ pts, color, route, dashArray });
                 });
               });
             });
@@ -98,20 +119,20 @@ const root = new Vue({
       },
     },
   },
-
   methods: {
-    airport_onclick: function (iata) {
+    airport_onclick(iata) {
       this.airport_modal.airport = iata;
       this.airport_modal.show = true;
     },
-
-    airroute_onclick: function (iata) {
+    airroute_onclick(iata) {
       this.airroute_modal.airroute = iata;
       this.airroute_modal.show = true;
     },
-    validator: (tag) => tag.match(path) || tag.match(range),
+    validator(tag) {
+      return tag.match(path) || tag.match(range);
+    },
   },
-  mounted: function () {
+  mounted() {
     数据.载入数据(() => {
       this.raw_query = getQueryVariable("query").split(",");
     });

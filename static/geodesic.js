@@ -135,7 +135,7 @@ class 大圆线段 {
   }
   get 大圆航线() {
     const array = [];
-    for (let i = 0; i < 1; i += 5 / this.距离) {
+    for (let i = 0; i < 1; i += 10 / this.距离) {
       array.push(this.中间点(i));
     }
     array.push(this.终);
@@ -154,9 +154,9 @@ const 生成绘图航线 = (源, 地图中心) => {
     if (绘图航线[idx].length > 1) {
       const prev = 绘图航线[idx][绘图航线[idx].length - 1];
       const cross = (boundary) =>
-        (prev.λ.d <= boundary && curr.λ.d > boundary) ||
-        (prev.λ.d > boundary && curr.λ.d <= boundary);
-      if (cross(地图中心 - 180) || cross(地图中心 + 180)) {
+        (prev.λ.d <= boundary && curr.λ.d >= boundary) ||
+        (curr.λ.d <= boundary && prev.λ.d >= boundary);
+      if (cross(地图中心 - 179) || cross(地图中心 + 179)) {
         绘图航线.push([]);
         idx++;
       }
