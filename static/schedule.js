@@ -25,7 +25,7 @@ const root = new Vue({
     raw_query: [],
     graph: null,
     map: {
-      provider: "Google",
+      provider: "GaoDe",
       mode: "Map",
       tooltip_options: {
         permanent: true,
@@ -38,6 +38,7 @@ const root = new Vue({
     map_center: 120,
     map_zoom: 3,
     show_map: false,
+    display_nav: true,
     airport_modal: {
       show: false,
       airport: null,
@@ -86,9 +87,9 @@ const root = new Vue({
             const range = new 机场(
               airports,
               parseInt(distance) *
-                { KM: 1, MI: 1.609344, NM: 1.852 }[
-                  distance.substring(distance.length - 2)
-                ]
+              { KM: 1, MI: 1.609344, NM: 1.852 }[
+              distance.substring(distance.length - 2)
+              ]
             );
             range.绘图线段(this.map_center).forEach((seg) => {
               rv.points.push(range);
@@ -99,7 +100,7 @@ const root = new Vue({
             });
           } else if (element.includes("-")) {
             const color = "blue";
-            const dashArray = "5,5";
+            const dashArray = "10,0";
             const nodes = element.split("-");
             const l = nodes.length;
             nodes[l - 1].split("/").forEach((last) => {

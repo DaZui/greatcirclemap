@@ -68,7 +68,16 @@
       <b-navbar type="dark" variant="faded">
         <b-navbar-nav class="ml-auto">
           <b-input-group>
+            <b-input-group-prepend>
+              <b-button @click="display_nav = false" v-if="display_nav"
+                >隐藏菜单</b-button
+              >
+              <b-button @click="display_nav = true" v-if="!display_nav"
+                >显示菜单</b-button
+              >
+            </b-input-group-prepend>
             <b-form-tags
+              v-show="display_nav"
               v-model="raw_query"
               separator=","
               placeholder="以半角逗号分隔。"
@@ -77,8 +86,8 @@
             >
             </b-form-tags>
             <b-input-group-append>
-              <b-button v-b-modal.about>帮助</b-button>
-              <b-button v-b-modal.settings>设置</b-button>
+              <b-button v-show="display_nav" v-b-modal.about>帮助</b-button>
+              <b-button v-show="display_nav" v-b-modal.settings>设置</b-button>
             </b-input-group-append>
           </b-input-group>
         </b-navbar-nav>
