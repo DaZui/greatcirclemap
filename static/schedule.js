@@ -1,4 +1,4 @@
-import { 数据, 航线, 机场 } from "./airport.js";
+import { 数据, 航线, 机场 } from "./aviation_tools/airport.js";
 
 const path = /^(([A-Za-z]{3}-)+([A-Za-z]{3}\/)*)*[A-Za-z]{3}$/;
 const range = /^\d+(km|mi|nm)@[A-Za-z]{3}$/;
