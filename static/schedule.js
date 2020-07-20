@@ -1,3 +1,5 @@
+import { 数据, 航线, 机场 } from "./airport.js";
+
 const path = /^(([A-Za-z]{3}-)+([A-Za-z]{3}\/)*)*[A-Za-z]{3}$/;
 const range = /^\d+(km|mi|nm)@[A-Za-z]{3}$/;
 
@@ -87,9 +89,9 @@ const root = new Vue({
             const range = new 机场(
               airports,
               parseInt(distance) *
-              { KM: 1, MI: 1.609344, NM: 1.852 }[
-              distance.substring(distance.length - 2)
-              ]
+                { KM: 1, MI: 1.609344, NM: 1.852 }[
+                  distance.substring(distance.length - 2)
+                ]
             );
             range.绘图线段(this.map_center).forEach((seg) => {
               rv.points.push(range);

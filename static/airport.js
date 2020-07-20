@@ -1,11 +1,17 @@
+import { 坐标点, 大圆线段 } from "./geodesic.js";
+
 class 数据 {
   static 地区字典 = {};
   static 机场字典 = {};
   static 载入数据(回调函数 = () => {}) {
     axios
       .all([
-        axios.get("https://cdn.jsdelivr.net/gh/liandlillc/airports_zh@master/regions.json"),
-        axios.get("https://cdn.jsdelivr.net/gh/liandlillc/airports_zh@master/airports.json"),
+        axios.get(
+          "https://cdn.jsdelivr.net/gh/liandlillc/airports_zh@master/regions.json"
+        ),
+        axios.get(
+          "https://cdn.jsdelivr.net/gh/liandlillc/airports_zh@master/airports.json"
+        ),
       ])
       .then(
         axios.spread((regions_response, airports_response) => {
@@ -70,3 +76,5 @@ class 航线 {
     }
   }
 }
+
+export { 数据, 航线, 机场 };

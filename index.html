@@ -69,12 +69,12 @@
         <b-navbar-nav class="ml-auto">
           <b-input-group>
             <b-input-group-prepend>
-              <b-button @click="display_nav = false" v-if="display_nav"
-                >隐藏菜单</b-button
-              >
-              <b-button @click="display_nav = true" v-if="!display_nav"
-                >显示菜单</b-button
-              >
+              <b-button @click="display_nav = false" v-if="display_nav">
+                隐藏菜单
+              </b-button>
+              <b-button @click="display_nav = true" v-if="!display_nav">
+                显示菜单
+              </b-button>
             </b-input-group-prepend>
             <b-form-tags
               v-show="display_nav"
@@ -196,13 +196,10 @@
         </table>
         <p>可以用半角逗号隔开查询。</p>
         <p>
-          使用了以下开源软件：vue.js、bootstrap-vue、axios、moment、moment-timezone、LeafLet、Vue2Leaflet。
-          项目开源在
-          <a href="https://github.com/DaZui/greatcirclemap"
-            >https://github.com/DaZui/greatcirclemap </a
-          >，网页是
-          <a href="https://gcmap.hanming.li/">https://gcmap.hanming.li/</a>。
-          请通过微信 13022055270 或者邮件 jason@hanming.li 联系我。
+          使用了以下开源软件：vue.js、bootstrap-vue、axios、moment、moment-timezone、LeafLet、Vue2Leaflet。<br />
+          <a href="https://github.com/LiAndLiLLC/gcmap">
+            https://github.com/LiAndLiLLC/gcmap
+          </a>
         </p>
       </b-modal>
     </div>
@@ -238,8 +235,8 @@
       crossorigin="anonymous"
     ></script>
     <script src="https://cdn.jsdelivr.net/gh/dazui/leaflet_tools@master/leaflet.ChineseTmsProviders.1.js"></script>
-    <script src="static/geodesic.js"></script>
-    <script src="static/airport.js"></script>
-    <script src="static/schedule.js"></script>
+    <script type="module" src="static/geodesic.js"></script>
+    <script type="module" src="static/airport.js"></script>
+    <script type="module" src="static/schedule.js"></script>
   </body>
 </html>
