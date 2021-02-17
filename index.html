@@ -1,240 +1,169 @@
 <!DOCTYPE html>
 <html lang="zh-Hans">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
-    <title>大圆绘图器</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css"
-      integrity="sha256-aAr2Zpq8MZ+YA/D6JtRD3xtrwpEz2IqOS+pWD/7XKIw="
-      crossorigin="anonymous"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.15.0/dist/bootstrap-vue.min.css"
-      integrity="sha256-e4HOoF20aWN7tP3c3B+XjQLqx8C0l3sdrLEiyF27BJM="
-      crossorigin="anonymous"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.min.css"
-    />
-    <link rel="stylesheet" href="/static/site.css" />
-  </head>
 
-  <body>
-    <div id="vueapp">
-      <l-map
-        id="map"
-        :zoom="map_zoom"
-        :center="map_center_point"
-        :max-bounds="map_bounds"
-        :min-zoom="1"
-      >
-        <l-tile-layer
-          :url="map_options.url"
-          :subdomains="map_options.subdomains"
-          attribution='&copy; 2020 &lt;a href="https://gcmap.hanming.li/"&gt;大圆绘图器&lt;/a&gt; by &lt;a href="https://hanming.li/"&gt;Li & Li 李及李&lt;/a&gt;'
-        >
-        </l-tile-layer>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <title>大圆绘图器</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/css/bootstrap.css"
+    crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-vue@2/dist/bootstrap-vue.css"
+    crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1/dist/leaflet.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="/static/site.css" />
+</head>
 
-        <l-marker
-          @click="airport_onclick(pt)"
-          :options="map.marker_options"
-          :lat-lng="pt.绘图坐标(map_center)"
-          v-for="pt in query.points"
-        >
-          <l-tooltip v-html="pt.toString()" :options="map.tooltip_options">
-            你好</l-tooltip
-          >
-        </l-marker>
-        <l-polyline
-          @click="airroute_onclick(route)"
-          :lat-lngs="route.pts"
-          :color="route.color"
-          :dash-array="route.dashArray"
-          :weight="2"
-          v-for="route in query.polylines"
-        >
-          <l-tooltip v-html="route.route.toString()">
-            未能显示
-          </l-tooltip>
-        </l-polyline>
-      </l-map>
-      <b-navbar type="dark" variant="faded">
-        <b-navbar-nav class="ml-auto">
-          <b-input-group>
-            <b-input-group-prepend>
-              <b-button @click="display_nav = false" v-if="display_nav">
-                隐藏菜单
-              </b-button>
-              <b-button @click="display_nav = true" v-if="!display_nav">
-                显示菜单
-              </b-button>
-            </b-input-group-prepend>
-            <b-form-tags
-              v-show="display_nav"
-              v-model="raw_query"
-              separator=","
-              placeholder="以半角逗号分隔。"
-              remove-on-delete
-              :tag-validator="validator"
-            >
-            </b-form-tags>
-            <b-input-group-append>
-              <b-button v-show="display_nav" v-b-modal.about>帮助</b-button>
-              <b-button v-show="display_nav" v-b-modal.settings>设置</b-button>
-            </b-input-group-append>
-          </b-input-group>
-        </b-navbar-nav>
-      </b-navbar>
-      <b-modal v-model="airport_modal.show" size="xl" hide-footer>
-        <template v-slot:modal-title>
-          <h4>
-            {{airport_modal.airport.名称}}（{{airport_modal.airport.IATA}} /
-            {{airport_modal.airport.ICAO}}）
-          </h4>
-        </template>
-        <b-list-group flush v-if="airport_modal.airport">
-          <b-list-group-item>
-            国家/地区和城市： {{ airport_modal.airport.国家 }} {{
-            airport_modal.airport.城市 }}
-          </b-list-group-item>
-          <b-list-group-item>
-            经纬度：{{airport_modal.airport.文字坐标}}
-          </b-list-group-item>
-          <b-list-group-item>
-            时区：{{airport_modal.airport.时区}}<br />
-            与 UTC 相差 {{airport_modal.airport.时差}}
-          </b-list-group-item>
-        </b-list-group>
-      </b-modal>
-      <b-modal v-model="airroute_modal.show" size="xl" hide-footer>
-        <template v-slot:modal-title>
-          <h3 v-html="airroute_modal.airroute.route"></h3>
-        </template>
-        <b-list-group flush v-if="airroute_modal.airroute">
-          <b-list-group-item v-for="y in airroute_modal.airroute.route.paths">
-            从 {{y.起}}<br />
-            到 {{y.终}}<br />
-            长 {{y.距离.toFixed(0)}} 公里，初始航向角 {{y.航向角.d.toFixed(0)}}°
-          </b-list-group-item>
-          <b-list-group-item v-if="airroute_modal.airroute.route.direct_path">
-            中转总距离为
-            {{airroute_modal.airroute.route.total_distance.toFixed(0)}}
-            公里，直飞距离为
-            {{airroute_modal.airroute.route.direct_path.距离.toFixed(0)}}
-            公里，绕航率为
-            {{airroute_modal.airroute.route.divert.toFixed(2)}}%。
-          </b-list-group-item>
-        </b-list-group>
-      </b-modal>
-      <b-modal id="settings" size="xl" hide-footer>
-        <template v-slot:modal-title>
-          <h3>地图设置</h3>
-        </template>
-        <label>地图供应商 Provider</label>
-        <select
-          class="form-control"
-          name="p"
-          v-model="map.provider"
-          placeholder="地图供应商"
-        >
-          <option value="GaoDe" selected>高德 Autonavi (GaoDe)</option>
-          <option value="Google">谷歌 Google</option>
-          <option value="OpenStreetMap">OpenStreetMap（不符合中国法律）</option>
-        </select>
-        <label>地图模式 Mode</label>
+<body>
+  <div id="vueapp">
+    <l-map id="map" :zoom="map_zoom" :center="map_center_point" :max-bounds="map_bounds" :min-zoom="1">
+      <l-tile-layer :url="map_options.url" :subdomains="map_options.subdomains"
+        attribution='&copy; 2020 &lt;a href="https://gcmap.hanming.li/"&gt;大圆绘图器&lt;/a&gt; by &lt;a href="https://hanming.li/"&gt;Li & Li 李及李&lt;/a&gt;'>
+      </l-tile-layer>
 
-        <select class="form-control" name="m" v-model="map.mode">
-          <option value="Map" selected>街道地图 Street Map</option>
-          <option value="Satellite" v-show="map.provider!=='OpenStreetMap'"
-            >卫星图 Satellite
-          </option>
-          <option value="Hybrid" v-show="map.provider==='Google'">
-            带街道的卫星图 Satellite with Streets
-          </option>
-          <option value="Terrain" v-show="map.provider==='Google'">
-            地形图 Terrain
-          </option>
-        </select>
-        <label>中央经线 Center Longitude</label>
-        <b-form-input
-          v-model="map_center"
-          type="number"
-          min="-180"
-          max="179"
-        ></b-form-input>
-      </b-modal>
-      <b-modal id="about" size="xl" hide-footer>
-        <template v-slot:modal-title>
-          <h3>关于大圆绘图器</h3>
-        </template>
-        <table class="table">
-          <thead>
-            <th>用法</th>
-            <th>例子</th>
-          </thead>
-          <tbody>
-            <tr>
-              <td>查找机场</td>
-              <td>ORD</td>
-            </tr>
-            <tr>
-              <td>绘制航线</td>
-              <td>SFO-ICN-SIN</td>
-            </tr>
-            <tr>
-              <td>绘制航程</td>
-              <td>1000km@PEK</td>
-            </tr>
-          </tbody>
-        </table>
-        <p>可以用半角逗号隔开查询。</p>
-        <p>
-          使用了以下开源软件：vue.js、bootstrap-vue、axios、moment、moment-timezone、LeafLet、Vue2Leaflet。<br />
-          <a href="https://github.com/LiAndLiLLC/gcmap">
-            https://github.com/LiAndLiLLC/gcmap
-          </a>
-        </p>
-      </b-modal>
-    </div>
-    <script
-      src="https://cdn.jsdelivr.net/npm/vue@2.6.11/dist/vue.min.js"
-      integrity="sha256-ngFW3UnAN0Tnm76mDuu7uUtYEcG3G5H1+zioJw3t+68="
-      crossorigin="anonymous"
-    ></script>
-    <script src="static/bootstrap-vue.js"></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/axios@0.19.2/dist/axios.min.js"
-      integrity="sha256-T/f7Sju1ZfNNfBh7skWn0idlCBcI3RwdLSS4/I7NQKQ="
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/moment@2.27.0/min/moment.min.js"
-      integrity="sha256-ZsWP0vT+akWmvEMkNYgZrPHKU9Ke8nYBPC3dqONp1mY="
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/moment-timezone@0.5.31/builds/moment-timezone-with-data-2012-2022.min.js"
-      integrity="sha256-J3t/BAGqnl57qtjKVL6IipkuPjImp2hkXeiiwNYELLw="
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.js"
-      integrity="sha256-fNoRrwkP2GuYPbNSJmMJOCyfRB2DhPQe0rGTgzRsyso="
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/vue2-leaflet@2.5.2/dist/vue2-leaflet.min.js"
-      integrity="sha256-dgNd6TKSy1YY24zMeeO9lG6OEtRVbOwsjqj9MMGi0nA="
-      crossorigin="anonymous"
-    ></script>
-    <script src="https://cdn.jsdelivr.net/gh/dazui/leaflet_tools@master/leaflet.ChineseTmsProviders.1.js"></script>
-    <script type="module" src="static/schedule.js"></script>
-  </body>
+      <l-marker @click="airport_onclick(pt)" :options="map.marker_options" :lat-lng="pt.绘图坐标(map_center)"
+        v-for="pt in query.points">
+        <l-tooltip v-html="pt.toString()" :options="map.tooltip_options">
+          你好</l-tooltip>
+      </l-marker>
+      <l-polyline @click="airroute_onclick(route)" :lat-lngs="route.pts" :color="route.color"
+        :dash-array="route.dashArray" :weight="2" v-for="route in query.polylines">
+        <l-tooltip v-html="route.route.toString()">
+          未能显示
+        </l-tooltip>
+      </l-polyline>
+    </l-map>
+    <b-navbar type="dark" variant="faded">
+      <b-navbar-nav class="ml-auto">
+        <b-input-group>
+          <b-input-group-prepend>
+            <b-button @click="display_nav = false" v-if="display_nav">
+              隐藏菜单
+            </b-button>
+            <b-button @click="display_nav = true" v-if="!display_nav">
+              显示菜单
+            </b-button>
+          </b-input-group-prepend>
+          <b-form-tags v-show="display_nav" v-model="raw_query" separator="," placeholder="以半角逗号分隔。" remove-on-delete
+            :tag-validator="validator">
+          </b-form-tags>
+          <b-input-group-append>
+            <b-button v-show="display_nav" v-b-modal.about>帮助</b-button>
+            <b-button v-show="display_nav" v-b-modal.settings>设置</b-button>
+          </b-input-group-append>
+        </b-input-group>
+      </b-navbar-nav>
+    </b-navbar>
+    <b-modal v-model="airport_modal.show" size="xl" hide-footer>
+      <template v-slot:modal-title>
+        <h4>
+          {{airport_modal.airport.名称}}（{{airport_modal.airport.IATA}} /
+          {{airport_modal.airport.ICAO}}）
+        </h4>
+      </template>
+      <b-list-group flush v-if="airport_modal.airport">
+        <b-list-group-item>
+          国家/地区和城市： {{ airport_modal.airport.国家 }} {{
+          airport_modal.airport.城市 }}
+        </b-list-group-item>
+        <b-list-group-item>
+          经纬度：{{airport_modal.airport.文字坐标}}
+        </b-list-group-item>
+        <b-list-group-item>
+          时区：{{airport_modal.airport.时区}}<br />
+          与 UTC 相差 {{airport_modal.airport.时差}}
+        </b-list-group-item>
+      </b-list-group>
+    </b-modal>
+    <b-modal v-model="airroute_modal.show" size="xl" hide-footer>
+      <template v-slot:modal-title>
+        <h3 v-html="airroute_modal.airroute.route"></h3>
+      </template>
+      <b-list-group flush v-if="airroute_modal.airroute">
+        <b-list-group-item v-for="y in airroute_modal.airroute.route.paths">
+          从 {{y.起}}<br />
+          到 {{y.终}}<br />
+          长 {{y.距离.toFixed(0)}} 公里，初始航向角 {{y.航向角.d.toFixed(0)}}°
+        </b-list-group-item>
+        <b-list-group-item v-if="airroute_modal.airroute.route.direct_path">
+          中转总距离为
+          {{airroute_modal.airroute.route.total_distance.toFixed(0)}}
+          公里，直飞距离为
+          {{airroute_modal.airroute.route.direct_path.距离.toFixed(0)}}
+          公里，绕航率为
+          {{airroute_modal.airroute.route.divert.toFixed(2)}}%。
+        </b-list-group-item>
+      </b-list-group>
+    </b-modal>
+    <b-modal id="settings" size="xl" hide-footer>
+      <template v-slot:modal-title>
+        <h3>地图设置</h3>
+      </template>
+      <label>地图供应商 Provider</label>
+      <select class="form-control" name="p" v-model="map.provider" placeholder="地图供应商">
+        <option value="GaoDe" selected>高德 Autonavi (GaoDe)</option>
+        <option value="Google">谷歌 Google</option>
+        <option value="OpenStreetMap">OpenStreetMap（不符合中国法律）</option>
+      </select>
+      <label>地图模式 Mode</label>
+
+      <select class="form-control" name="m" v-model="map.mode">
+        <option value="Map" selected>街道地图 Street Map</option>
+        <option value="Satellite" v-show="map.provider!=='OpenStreetMap'">卫星图 Satellite
+        </option>
+        <option value="Hybrid" v-show="map.provider==='Google'">
+          带街道的卫星图 Satellite with Streets
+        </option>
+        <option value="Terrain" v-show="map.provider==='Google'">
+          地形图 Terrain
+        </option>
+      </select>
+      <label>中央经线 Center Longitude</label>
+      <b-form-input v-model="map_center" type="number" min="-180" max="179"></b-form-input>
+    </b-modal>
+    <b-modal id="about" size="xl" hide-footer>
+      <template v-slot:modal-title>
+        <h3>关于大圆绘图器</h3>
+      </template>
+      <table class="table">
+        <thead>
+          <th>用法</th>
+          <th>例子</th>
+        </thead>
+        <tbody>
+          <tr>
+            <td>查找机场</td>
+            <td>ORD</td>
+          </tr>
+          <tr>
+            <td>绘制航线</td>
+            <td>SFO-ICN-SIN</td>
+          </tr>
+          <tr>
+            <td>绘制航程</td>
+            <td>1000km@PEK</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>可以用半角逗号隔开查询。</p>
+      <p>
+        使用了以下开源软件：vue.js、bootstrap-vue、axios、moment、moment-timezone、LeafLet、Vue2Leaflet。<br />
+        <a href="https://github.com/LiAndLiLLC/gcmap">
+          https://github.com/LiAndLiLLC/gcmap
+        </a>
+      </p>
+    </b-modal>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-vue@2/dist/bootstrap-vue.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@0/dist/axios.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/moment@2/dist/moment.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/moment-timezone@0/builds/moment-timezone-with-data-10-year-range.js"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1/dist/leaflet.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue2-leaflet@2/dist/vue2-leaflet.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/gh/dazui/leaflet_tools@master/leaflet.ChineseTmsProviders.1.js"
+    crossorigin="anonymous"></script>
+  <script type="module" src="static/schedule.js"></script>
+</body>
+
 </html>
